@@ -4,4 +4,6 @@
     <string name="msg_helloWorld">Hello world!</string>
     <string name="msg_welcome">Welcome!</string>
     <string name="msg_continue">Continue sliding</string>
+    <string name="msg_ops">Ops!</string>
+    <string name="button_reset">Reset</string>
 </resources>
