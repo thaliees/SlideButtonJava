@@ -35,34 +35,36 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_DOWN: return true;
 
                 case MotionEvent.ACTION_MOVE:
-                    // Initialize parameters to evaluate
-                    if (movementInitialX == 0) {
-                        movementInitialX = button.toSlider.getX();              // Movement initial (when user move for first once the TextView)
-                        widthButton = button.getWidth();                        // Get width of our SlideButton
-                        button.initWidthToSlider = button.toSlider.getWidth();  // Get width of our TextView (Now, we saved in your property)
-                        halfToMove = (float) button.toSlider.getWidth() / 2;    // Calculate half the width of our TextView
+                    // Validate that ImageView is not expanded and avoid moving it
+                    if (!button.expanded) {
+                        // Initialize parameters to evaluate
+                        if (movementInitialX == 0) {
+                            movementInitialX = button.toSlider.getX();              // Movement initial (when user move for first once the ImageView)
+                            widthButton = button.getWidth();                        // Get width of our SlideButton
+                            button.initWidthToSlider = button.toSlider.getWidth();  // Get width of our ImageView (Now, we saved in your property)
+                            halfToMove = (float) button.toSlider.getWidth() / 2;    // Calculate half the width of our ImageView
+                        }
+                        // Move the button
+                        if (event.getX() > (movementInitialX + halfToMove) && (event.getX() + halfToMove) < widthButton)
+                            button.toSlider.setX(event.getX() - halfToMove);
+                        // Move to the end and avoid overflowing the limit
+                        if ((event.getX() + halfToMove) > widthButton && (button.toSlider.getX() + halfToMove) < widthButton)
+                            button.toSlider.setX(widthButton - button.initWidthToSlider);
+                        // Move to the start and avoid overflowing the limit
+                        if (event.getX() < halfToMove)
+                            button.toSlider.setX(0);
                     }
-                    // Move the button
-                    if (event.getX() > (movementInitialX + halfToMove) && (event.getX() + halfToMove) < widthButton)
-                        button.toSlider.setX(event.getX() - halfToMove);
-                    // Move to the end and avoid overflowing the limit
-                    if ((event.getX() + halfToMove) > widthButton && (button.toSlider.getX() + halfToMove) < widthButton)
-                        button.toSlider.setX(widthButton - button.initWidthToSlider);
-                    // Move to the start and avoid overflowing the limit
-                    if (event.getX() < halfToMove)
-                        button.toSlider.setX(0);
 
                     return true;
 
                 case MotionEvent.ACTION_UP:
                     // What animation to do?
-                    if (button.toSlider.getX() == 0) button.collapseButton();
-                    else if (button.toSlider.getX() == (widthButton - button.initWidthToSlider)) {
+                    // If the position of the movement exceeds 75% of the width of the SlideButton, expand
+                    if ((button.toSlider.getX() + button.initWidthToSlider) > (widthButton * 0.75)) {
                         text.setVisibility(View.VISIBLE);
                         reset.setEnabled(true);
                         button.expandButton();
-                    }
-                    else button.moveButtonBack();
+                    } else button.moveButtonBack();
             }
             return false;
         }

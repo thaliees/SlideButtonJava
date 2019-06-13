@@ -7,15 +7,20 @@ import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class SlideButton extends RelativeLayout {
-    public TextView toSlider;
+    public ImageView toSlider;
     public Integer initWidthToSlider;
+    public Boolean expanded;
+    private Drawable arrow, check;
 
     public SlideButton(Context context) {
         super(context);
@@ -38,34 +43,50 @@ public class SlideButton extends RelativeLayout {
         initSlideButton(context);
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void initSlideButton(Context context){
         RelativeLayout slideButton = new RelativeLayout(context);
-        slideButton.setPadding(0, 0, 0, 0);
-        RelativeLayout.LayoutParams layoutParamsSlideButton = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        slideButton.setBackground(ContextCompat.getDrawable(context, R.drawable.shape_rounded_background));
+        LayoutParams layoutParamsSlideButton = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         layoutParamsSlideButton.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         addView(slideButton, layoutParamsSlideButton);
 
-        // The TextView will behave like the sliding button
-        final TextView toSlider = new TextView(context);
+        // The TextView indicate that the button must be slid
+        final TextView text = new TextView(context);
+        text.setText(getResources().getString(R.string.textView_toMove));
+        text.setTextColor(getResources().getColor(R.color.colorWhite));
+        text.setTextSize(20);
+        text.setTypeface(null, Typeface.BOLD);
+        LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+        slideButton.addView(text, layoutParams);
+
+        // Define icons
+        arrow = ContextCompat.getDrawable(context, R.drawable.ic_arrow);
+        check = ContextCompat.getDrawable(context, R.drawable.ic_check);
+
+        // Indicate that ImageView isn't expanded
+        expanded = false;
+
+        // The ImageView will behave like the sliding button
+        final ImageView toSlider = new ImageView(context);
         this.toSlider = toSlider;
-        toSlider.setBackgroundColor(getResources().getColor(R.color.colorAccent));
-        toSlider.setText(getResources().getString(R.string.textView_toMove));
-        toSlider.setTextColor(getResources().getColor(R.color.colorWhite));
-        toSlider.setTextSize(20);
-        toSlider.setTypeface(null, Typeface.BOLD);
-        toSlider.setPadding(60, 35, 60, 35);
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
-        slideButton.addView(toSlider, layoutParams);
+        toSlider.setImageDrawable(arrow);   // Default drawable
+        toSlider.setPadding(60, 40, 60, 40);
+        toSlider.setBackground(ContextCompat.getDrawable(context, R.drawable.shape_rounded));
+        LayoutParams layoutParamsToSlider = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        layoutParamsToSlider.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
+        layoutParamsToSlider.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
+        slideButton.addView(toSlider, layoutParamsToSlider);
     }
 
     public void expandButton(){
-        // Indicate the current point of our TextView is and the point where it should arrive
+        // Indicate the current point of our ImageView is and the point where it should arrive
         final ValueAnimator position = ValueAnimator.ofFloat(toSlider.getX(), 0);
-        // Indicate the width of our TextView and how wide it will take
+        // Indicate the width of our ImageView and how wide it will take
         final ValueAnimator width = ValueAnimator.ofInt(toSlider.getWidth(), getWidth());
 
-        // Update the position of our TextView
+        // Update the position of our ImageView
         position.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -74,7 +95,7 @@ public class SlideButton extends RelativeLayout {
             }
         });
 
-        // Update the width of our TextView
+        // Update the width of our ImageView
         width.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -90,8 +111,8 @@ public class SlideButton extends RelativeLayout {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                toSlider.setText(R.string.msg_welcome);
-                toSlider.setTextColor(getResources().getColor(R.color.colorWhite));
+                toSlider.setImageDrawable(check);   // Change icon to show
+                expanded = true;                    // ImageView expanded
             }
         });
         animator.playTogether(position, width);
@@ -100,11 +121,11 @@ public class SlideButton extends RelativeLayout {
     }
 
     public void moveButtonBack(){
-        // Indicate the current point of our TextView is and the point where it should arrive
+        // Indicate the current point of our ImageView is and the point where it should arrive
         final ValueAnimator position = ValueAnimator.ofFloat(toSlider.getX(), 0);
-        position.setDuration(2000);  // Also try animator.setDuration(2000);
+        position.setDuration(1000);  // Also try animator.setDuration(1000);
 
-        // Update the position of our TextView
+        // Update the position of our ImageView
         position.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -115,28 +136,15 @@ public class SlideButton extends RelativeLayout {
 
         // Initialize animation
         AnimatorSet animator = new AnimatorSet();
-        animator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                super.onAnimationStart(animation);
-                toSlider.setText(getResources().getString(R.string.msg_ops));
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                toSlider.setText(R.string.textView_toMove);
-            }
-        });
         animator.playTogether(position);
         animator.start();
     }
 
     public void collapseButton(){
-        // Indicate the width of our TextView and how wide it will take
+        // Indicate the width of our ImageView and how wide it will take
         final ValueAnimator width = ValueAnimator.ofInt(toSlider.getWidth(), initWidthToSlider);
 
-        // Update the width of our TextView
+        // Update the width of our ImageView
         width.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -149,16 +157,10 @@ public class SlideButton extends RelativeLayout {
         // Also can addListener from the ValueAnimator
         width.addListener(new AnimatorListenerAdapter() {
             @Override
-            public void onAnimationStart(Animator animation) {
-                super.onAnimationStart(animation);
-                toSlider.setText("");
-            }
-
-            @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                toSlider.setText(R.string.textView_toMove);
-                toSlider.setTextColor(getResources().getColor(R.color.colorWhite));
+                toSlider.setImageDrawable(arrow);   // Change icon to show
+                expanded = false;                   // ImageView not expanded
             }
         });
 
