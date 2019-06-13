@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">SlideButton</string>
+    <string name="textView_toMove">Slide</string>
+    <string name="msg_helloWorld">Hello world!</string>
+    <string name="msg_welcome">Welcome!</string>
+    <string name="msg_continue">Continue sliding</string>
+</resources>
